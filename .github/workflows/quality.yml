@@ -1,0 +1,49 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  code-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Backend
+        run: cd backend && npm install
+
+      - name: Install AI
+        run: |
+          cd backend/ai
+          python -m pip install -r requirements.txt pytest pytest-cov
+
+      - name: Backend Coverage
+        run: cd backend && npm test -- --coverage --coverageReporters=json
+        continue-on-error: true
+
+      - name: AI Coverage
+        run: cd backend/ai && pytest --cov=. --cov-report=json --cov-report=term
+        continue-on-error: true
+
+      - name: Comment PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Code coverage report attached to build logs'
+            })

@@ -1,0 +1,37 @@
+{
+  "name": "symbios",
+  "version": "1.0.0",
+  "description": "Córtex-Exocórtex Symbiotic System: Real-time AI Calibration + Blockchain Evidence",
+  "type": "module",
+  "main": "backend/server.js",
+  "scripts": {
+    "dev:backend": "node --watch backend/server.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:ai": "python backend/ai/core.py",
+    "build": "npm run build:contracts && npm run build:frontend",
+    "build:contracts": "cd contracts && hardhat compile",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "jest --coverage",
+    "test:contracts": "cd contracts && hardhat test",
+    "deploy:testnet": "cd contracts && hardhat run scripts/deploy.js --network amoy",
+    "lint": "eslint backend/ --fix",
+    "start": "node backend/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "jwt-simple": "^0.5.6",
+    "bull": "^4.11.0",
+    "ethers": "^6.9.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@testing-library/react": "^14.0.0",
+    "eslint": "^8.50.0",
+    "nodemon": "^3.0.1"
+  }
+}
