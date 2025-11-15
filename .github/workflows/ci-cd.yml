@@ -1,0 +1,237 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Lint Backend
+  lint-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+      
+      - name: Install dependencies
+        run: cd backend && npm install
+      
+      - name: Run ESLint
+        run: cd backend && npx eslint . --max-warnings 0
+
+  # Test Backend
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:5.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+      
+      - name: Install dependencies
+        run: cd backend && npm install
+      
+      - name: Run Jest tests
+        run: cd backend && npm test -- --coverage
+        env:
+          MONGODB_URI: mongodb://localhost:27017/symbios-test
+          JWT_SECRET: test_secret_key
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/coverage/coverage-final.json
+
+  # Test AI Service
+  test-ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: 'backend/ai/requirements.txt'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          cd backend/ai && pip install -r requirements.txt pytest pytest-cov
+      
+      - name: Run pytest
+        run: cd backend/ai && pytest --cov=. --cov-report=xml
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
+  # Lint Solidity
+  lint-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'contracts/package-lock.json'
+      
+      - name: Install dependencies
+        run: cd contracts && npm install
+      
+      - name: Run Solhint
+        run: cd contracts && npx solhint 'contracts/**/*.sol'
+
+  # Test Smart Contracts
+  test-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'contracts/package-lock.json'
+      
+      - name: Install dependencies
+        run: cd contracts && npm install
+      
+      - name: Compile contracts
+        run: cd contracts && npx hardhat compile
+      
+      - name: Run Hardhat tests
+        run: cd contracts && npx hardhat test
+
+  # Build Images
+  build:
+    needs: [lint-backend, test-backend, test-ai, lint-contracts, test-contracts]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: docker/setup-buildx-action@v2
+      
+      - uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build Backend
+      - name: Build Backend Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build AI Service
+      - name: Build AI Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/ai
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/ai:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build Frontend
+      - name: Build Frontend Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy to Staging (on main branch)
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy to Polygon Amoy
+        run: |
+          cd contracts
+          npm install
+          npx hardhat run scripts/deploy.js --network amoy
+        env:
+          POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+          POLYGON_PRIVATE_KEY: ${{ secrets.POLYGON_PRIVATE_KEY }}
+
+      - name: Upload contract addresses
+        uses: actions/upload-artifact@v3
+        with:
+          name: contract-addresses
+          path: contracts/deploy-output.txt
+
+  # Security Scan
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Notify
+  notify:
+    needs: [lint-backend, test-backend, test-ai, build, deploy-staging, security]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Build status
+        run: |
+          echo "✅ Backend: ${{ needs.lint-backend.result }}"
+          echo "✅ Tests: ${{ needs.test-backend.result }}"
+          echo "✅ AI: ${{ needs.test-ai.result }}"
+          echo "✅ Build: ${{ needs.build.result }}"
+          echo "✅ Deploy: ${{ needs.deploy-staging.result }}"
+          echo "✅ Security: ${{ needs.security.result }}"
