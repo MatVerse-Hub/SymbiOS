@@ -4,16 +4,34 @@ Ponte entre a intenção humana e a execução tecnológica, com um backend Expr
 
 ## Como rodar
 
-```bash
-npm install
-npm run dev:backend
-```
-
-Para a API de IA local:
+### Backend (Express)
 
 ```bash
 cd backend
-python ai/core.py
+npm install
+npm run dev
+# testes e lint
+npm test
+npm run lint
+```
+
+Para a API de IA local (FastAPI):
+
+```bash
+cd backend/ai
+pip install -r requirements.txt
+pytest  # opcional para checar a suíte mínima
+python core.py  # sobe em http://localhost:8000
+```
+
+### Contratos (Hardhat)
+
+```bash
+cd contracts
+npm install
+npm run lint
+npm run test
+npm run compile
 ```
 
 ### Variáveis de ambiente
