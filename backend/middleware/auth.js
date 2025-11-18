@@ -3,7 +3,11 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const { JWT_SECRET = 'changeme' } = process.env;
+const resolvedSecret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'test' ? 'test-secret' : null);
+
+if (!resolvedSecret) {
+  throw new Error('JWT_SECRET must be set before starting the backend');
+}
 
 export function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -17,7 +21,7 @@ export function authMiddleware(req, res, next) {
   }
 
   try {
-    const decoded = jwt.decode(token, JWT_SECRET);
+    const decoded = jwt.decode(token, resolvedSecret);
     req.user = decoded;
     return next();
   } catch (err) {
@@ -26,5 +30,5 @@ export function authMiddleware(req, res, next) {
 }
 
 export function createToken(payload) {
-  return jwt.encode(payload, JWT_SECRET);
+  return jwt.encode(payload, resolvedSecret);
 }
