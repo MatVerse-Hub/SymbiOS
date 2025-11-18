@@ -11,7 +11,7 @@
     "build": "npm run build:contracts && npm run build:frontend",
     "build:contracts": "cd contracts && hardhat compile",
     "build:frontend": "cd frontend && npm run build",
-    "test": "jest --coverage",
+    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:contracts": "cd contracts && hardhat test",
     "deploy:testnet": "cd contracts && hardhat run scripts/deploy.js --network amoy",
     "lint": "eslint backend/ --fix",
