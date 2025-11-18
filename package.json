@@ -9,7 +9,7 @@
     "dev:frontend": "cd frontend && npm run dev",
     "dev:ai": "python backend/ai/core.py",
     "build": "npm run build:contracts && npm run build:frontend",
-    "build:contracts": "cd contracts && hardhat compile",
+    "build:contracts": "cd contracts && npm run compile",
     "build:frontend": "cd frontend && npm run build",
     "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:contracts": "cd contracts && hardhat test",

@@ -3,14 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "lint": "solhint 'contracts/**/*.sol'",
-    "compile": "hardhat compile",
-    "test": "hardhat test"
+    "lint": "node scripts/lint.js",
+    "compile": "node scripts/compile.js",
+    "test": "node scripts/test.js"
   },
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "dotenv": "^16.3.1",
-    "hardhat": "^2.20.0",
-    "solhint": "^3.6.2"
-  }
+  "devDependencies": {}
 }

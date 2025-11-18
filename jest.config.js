@@ -1,6 +1,7 @@
 export default {
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
+  testPathIgnorePatterns: ['<rootDir>/contracts/'],
   collectCoverageFrom: [
     'backend/**/*.js',
     '!backend/node_modules/**',

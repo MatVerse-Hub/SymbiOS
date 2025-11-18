@@ -1,6 +1,4 @@
 require('dotenv').config();
-require('@nomicfoundation/hardhat-toolbox');
-
 const { POLYGON_RPC_URL, POLYGON_PRIVATE_KEY } = process.env;
 
 module.exports = {
