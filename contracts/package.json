@@ -1,0 +1,11 @@
+{
+  "name": "symbios-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "lint": "node scripts/lint.js",
+    "compile": "node scripts/compile.js",
+    "test": "node scripts/test.js"
+  },
+  "devDependencies": {}
+}

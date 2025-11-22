@@ -1,11 +1,13 @@
 export default {
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
-  testPathIgnorePatterns: ['<rootDir>/contracts/'],
   collectCoverageFrom: [
-    'backend/**/*.js',
-    '!backend/node_modules/**',
-    '!backend/server.js',
+    '**/*.js',
+    '!coverage/**',
+    '!node_modules/**',
+    '!jest.config.js',
+    '!ai/**',
+    '!server.js'
   ],
   transform: {},
   coverageThreshold: {
