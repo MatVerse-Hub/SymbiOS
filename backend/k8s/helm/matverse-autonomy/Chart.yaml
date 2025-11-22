@@ -1,0 +1,25 @@
+apiVersion: v2
+name: matverse-autonomy
+description: MatVerse Autonomous Decision System with Blockchain Governance
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - matverse
+  - autonomy
+  - kalman
+  - blockchain
+  - kubernetes
+  - autoscaling
+
+maintainers:
+  - name: MatVerse Team
+    email: team@matverse.io
+
+sources:
+  - https://github.com/MatVerse-Hub/SymbiOS
+
+dependencies: []
+
+icon: https://matverse.io/logo.png

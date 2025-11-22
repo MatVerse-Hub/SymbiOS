@@ -1,0 +1,64 @@
+# MatVerse Autonomy Helm Chart - Values
+
+# Operator configuration
+operator:
+  image:
+    repository: matverse/operator
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Blockchain configuration
+  blockchain:
+    enabled: true
+    rpcUrl: "http://localhost:8545"
+    wsUrl: "ws://localhost:8546"
+    contractAddress: ""  # Set via --set or values override
+
+  # Logging
+  logLevel: INFO
+
+  # Security
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+
+# CRD installation
+crd:
+  install: true
+
+# RBAC
+rbac:
+  create: true
+  serviceAccount:
+    create: true
+    name: matverse-operator
+
+# Namespace
+namespace:
+  create: true
+  name: matverse-system
+
+# Example MatVerseScaling CR (optional)
+examples:
+  enabled: false
+  target:
+    name: my-app
+    namespace: default
+    minReplicas: 2
+    maxReplicas: 20
+  mode: balanced
+  blockchain:
+    enabled: true
+    requireApproval: true
+    votingTimeout: 120
