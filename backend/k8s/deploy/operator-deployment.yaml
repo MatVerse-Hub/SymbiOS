@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: matverse-system
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matverse-operator
+  namespace: matverse-system
+  labels:
+    app: matverse-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matverse-operator
+  template:
+    metadata:
+      labels:
+        app: matverse-operator
+    spec:
+      serviceAccountName: matverse-operator
+      containers:
+        - name: operator
+          image: matverse/operator:latest
+          imagePullPolicy: IfNotPresent
+
+          env:
+            # Blockchain RPC (opcional)
+            - name: BLOCKCHAIN_RPC_URL
+              value: "http://localhost:8545"
+
+            # Logging
+            - name: LOG_LEVEL
+              value: "INFO"
+
+            # Kopf operator settings
+            - name: KOPF_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+      securityContext:
+        fsGroup: 1000

@@ -20,6 +20,13 @@ from enum import Enum
 
 from .kalman_policy import Action
 
+# Kubernetes client (opcional)
+try:
+    from kubernetes import client, config
+    K8S_AVAILABLE = True
+except ImportError:
+    K8S_AVAILABLE = False
+
 
 @dataclass
 class ActuationResult:
@@ -42,16 +49,33 @@ class K8sActuator:
         self,
         namespace: str = "default",
         deployment_name: str = "matverse-api",
-        mock_mode: bool = True  # True para testes sem K8s real
+        mock_mode: bool = True,  # True para testes sem K8s real
+        min_replicas: int = 2,
+        max_replicas: int = 10
     ):
         self.namespace = namespace
         self.deployment_name = deployment_name
         self.mock_mode = mock_mode
+        self.min_replicas = min_replicas
+        self.max_replicas = max_replicas
 
         # Estado simulado (mock)
         self.current_replicas = 3
-        self.min_replicas = 2
-        self.max_replicas = 10
+
+        # Cliente K8s (se não for mock)
+        if not self.mock_mode:
+            if not K8S_AVAILABLE:
+                raise ImportError("kubernetes library not installed. Install with: pip install kubernetes")
+
+            try:
+                config.load_incluster_config()
+            except config.ConfigException:
+                config.load_kube_config()
+
+            self.k8s_apps = client.AppsV1Api()
+
+            # Obtém replicas atuais do deployment
+            self._sync_current_replicas()
 
     def execute_action(self, action: Action) -> ActuationResult:
         """
@@ -95,67 +119,77 @@ class K8sActuator:
 
     def _scale_up(self) -> ActuationResult:
         """Aumenta número de réplicas"""
+        if self.current_replicas >= self.max_replicas:
+            return ActuationResult(
+                success=False,
+                action=Action.SCALE_UP,
+                details=f"Already at max replicas ({self.max_replicas})",
+                execution_time_ms=0.0,
+                timestamp=time.time()
+            )
+
+        old_replicas = self.current_replicas
+        target_replicas = min(self.current_replicas + 2, self.max_replicas)
+
         if self.mock_mode:
-            if self.current_replicas >= self.max_replicas:
-                return ActuationResult(
-                    success=False,
-                    action=Action.SCALE_UP,
-                    details=f"Already at max replicas ({self.max_replicas})",
-                    execution_time_ms=0.0,
-                    timestamp=time.time()
-                )
+            self.current_replicas = target_replicas
+            success = True
+        else:
+            success = self._scale_deployment_k8s(target_replicas)
 
-            old_replicas = self.current_replicas
-            self.current_replicas = min(self.current_replicas + 2, self.max_replicas)
-
+        if success:
             return ActuationResult(
                 success=True,
                 action=Action.SCALE_UP,
                 details=f"Scaled {old_replicas} → {self.current_replicas} replicas",
-                execution_time_ms=50.0,  # Simulado
+                execution_time_ms=50.0 if self.mock_mode else 200.0,
+                timestamp=time.time()
+            )
+        else:
+            return ActuationResult(
+                success=False,
+                action=Action.SCALE_UP,
+                details="Failed to scale deployment",
+                execution_time_ms=0.0,
                 timestamp=time.time()
             )
 
-        # TODO: Implementar com kubernetes.client real
-        return ActuationResult(
-            success=False,
-            action=Action.SCALE_UP,
-            details="K8s client not implemented",
-            execution_time_ms=0.0,
-            timestamp=time.time()
-        )
-
     def _scale_down(self) -> ActuationResult:
         """Reduz número de réplicas"""
+        if self.current_replicas <= self.min_replicas:
+            return ActuationResult(
+                success=False,
+                action=Action.SCALE_DOWN,
+                details=f"Already at min replicas ({self.min_replicas})",
+                execution_time_ms=0.0,
+                timestamp=time.time()
+            )
+
+        old_replicas = self.current_replicas
+        target_replicas = max(self.current_replicas - 1, self.min_replicas)
+
         if self.mock_mode:
-            if self.current_replicas <= self.min_replicas:
-                return ActuationResult(
-                    success=False,
-                    action=Action.SCALE_DOWN,
-                    details=f"Already at min replicas ({self.min_replicas})",
-                    execution_time_ms=0.0,
-                    timestamp=time.time()
-                )
+            self.current_replicas = target_replicas
+            success = True
+        else:
+            success = self._scale_deployment_k8s(target_replicas)
 
-            old_replicas = self.current_replicas
-            self.current_replicas = max(self.current_replicas - 1, self.min_replicas)
-
+        if success:
             return ActuationResult(
                 success=True,
                 action=Action.SCALE_DOWN,
                 details=f"Scaled {old_replicas} → {self.current_replicas} replicas",
-                execution_time_ms=40.0,  # Simulado
+                execution_time_ms=40.0 if self.mock_mode else 180.0,
                 timestamp=time.time()
             )
-
-        # TODO: Implementar com kubernetes.client real
-        return ActuationResult(
-            success=False,
-            action=Action.SCALE_DOWN,
-            details="K8s client not implemented",
-            execution_time_ms=0.0,
-            timestamp=time.time()
-        )
+        else:
+            return ActuationResult(
+                success=False,
+                action=Action.SCALE_DOWN,
+                details="Failed to scale deployment",
+                execution_time_ms=0.0,
+                timestamp=time.time()
+            )
 
     def _retune_parameters(self) -> ActuationResult:
         """Re-ajusta parâmetros do sistema"""
@@ -197,8 +231,52 @@ class K8sActuator:
             timestamp=time.time()
         )
 
+    def _sync_current_replicas(self):
+        """Sincroniza current_replicas com deployment real (K8s)"""
+        if self.mock_mode:
+            return
+
+        try:
+            deployment = self.k8s_apps.read_namespaced_deployment(
+                name=self.deployment_name,
+                namespace=self.namespace
+            )
+            self.current_replicas = deployment.spec.replicas or 1
+        except Exception as e:
+            print(f"Erro ao sincronizar replicas: {e}")
+            self.current_replicas = 3  # Fallback
+
+    def _scale_deployment_k8s(self, target_replicas: int) -> bool:
+        """Escala deployment no K8s real"""
+        if self.mock_mode:
+            return True
+
+        try:
+            # Patch do deployment
+            body = {
+                "spec": {
+                    "replicas": target_replicas
+                }
+            }
+
+            self.k8s_apps.patch_namespaced_deployment_scale(
+                name=self.deployment_name,
+                namespace=self.namespace,
+                body=body
+            )
+
+            self.current_replicas = target_replicas
+            return True
+
+        except Exception as e:
+            print(f"Erro ao escalar deployment: {e}")
+            return False
+
     def get_current_state(self) -> Dict:
-        """Retorna estado atual do cluster (mock)"""
+        """Retorna estado atual do cluster"""
+        if not self.mock_mode:
+            self._sync_current_replicas()
+
         return {
             'replicas': self.current_replicas,
             'min_replicas': self.min_replicas,
