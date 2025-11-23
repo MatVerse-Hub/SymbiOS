@@ -329,7 +329,7 @@ Proprietary - © 2025 MatVerse Team. All rights reserved.
 
 Construído com 🧠 por **MatVerse Team** e **AIs Simbióticas**.
 
-**simbiOS** - Onde humanos e máquinas **evoluem juntos**.
+**symbiOS** - Onde humanos e máquinas **evoluem juntos**.
 
 ---
 
