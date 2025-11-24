@@ -4,6 +4,39 @@ Ponte entre a intenção humana e a execução tecnológica, com um backend Expr
 
 ## Como rodar
 
+### MVP Ω-GATE + PoSE-Lite (FastAPI)
+
+1. Instale as dependências Python do MVP:
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Suba a API localmente (porta 8000):
+
+```bash
+uvicorn symbios.backend.app:app --reload
+```
+
+3. Rode o benchmark de fumaça para gerar `evidence.json` e `pose_log.txt` na raiz de `symbios/`:
+
+```bash
+python symbios/scripts/bench_full.py
+```
+
+Isso envia 5 requisições falsas para `/symbios/ia/invoke`, valida com Ω-GATE (τ = 0.85) e registra a evidência via PoSE-Lite.
+
+### Publicação (manual)
+
+Quando estiver pronto para publicar uma release, execute (ajuste o alvo, se necessário):
+
+```bash
+gh release create v0.1.0-MVP \
+  --target 96743df \
+  --title "v0.1.0-MVP – Ω-GATE + PoSE-Lite" \
+  --notes "Primeira versão funcional com /symbios/ia/invoke, Ω-GATE (τ=0,85) e PoSE-Lite capturando evidências em evidence.json."
+```
+
 ---
 
 ## 🎯 O Que é symbiOS?
