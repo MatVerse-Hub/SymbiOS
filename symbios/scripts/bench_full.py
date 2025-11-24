@@ -9,11 +9,28 @@ URL = "http://localhost:8000/symbios/ia/invoke"
 
 
 def run_fake_request(index: int) -> Dict[str, Any]:
+    prompt = f"Responda a pergunta {index}"
     payload = {
         "model": "gpt-4o",
-        "input": {"prompt": f"Responda a pergunta {index}"},
-        "output": {"text": f"Resposta simulada {index}", "tokens": 10 + index},
-        "context": {"expected_format": "text", "timestamp": datetime.utcnow().isoformat()},
+        "input": {
+            "prompt": prompt,
+            "language": "pt-BR",
+            "expected_fields": ["answer", "timestamp"],
+        },
+        "output": {
+            "text": json.dumps(
+                {
+                    "prompt": prompt,
+                    "language": "pt-BR",
+                    "format": "json",
+                    "answer": f"Resposta simulada {index}",
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
+                ensure_ascii=False,
+            ),
+            "tokens": 10 + index,
+        },
+        "context": {"expected_format": "json", "timestamp": datetime.utcnow().isoformat()},
     }
     response = requests.post(URL, json=payload, timeout=10)
     response.raise_for_status()
