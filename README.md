@@ -32,9 +32,9 @@ Quando estiver pronto para publicar uma release, execute (ajuste o alvo, se nece
 
 ```bash
 gh release create v0.1.0-MVP \
-  --target 96743df \
+  --target a433b88 \
   --title "v0.1.0-MVP – Ω-GATE + PoSE-Lite" \
-  --notes "Primeira versão funcional com /symbios/ia/invoke, Ω-GATE (τ=0,85) e PoSE-Lite capturando evidências em evidence.json."
+  --notes "Primeira versão funcional com /symbios/ia/invoke, Ω-GATE (τ=0,85) e PoSE-Lite capturando evidências em evidence.json." 
 ```
 
 ---
