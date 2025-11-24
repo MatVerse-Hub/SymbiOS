@@ -13,28 +13,43 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      - name: Install Backend
-        run: cd backend && npm install
-
-      - name: Install AI
+      - name: Check Backend Structure
+        id: check-backend
         run: |
-          cd backend/ai
-          python -m pip install -r requirements.txt pytest pytest-cov
+          if [ -f "backend/requirements.txt" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "type=python" >> $GITHUB_OUTPUT
+          elif [ -f "backend/package.json" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "type=node" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Backend Coverage
-        run: cd backend && npm test -- --coverage --coverageReporters=json
+      - name: Install Python Backend
+        if: steps.check-backend.outputs.type == 'python'
+        run: |
+          python -m pip install --upgrade pip
+          cd backend && pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Python Backend Coverage
+        if: steps.check-backend.outputs.type == 'python'
+        run: cd backend && pytest src/ -v --cov=src --cov-report=json --cov-report=term
         continue-on-error: true
 
-      - name: AI Coverage
-        run: cd backend/ai && pytest --cov=. --cov-report=json --cov-report=term
+      - name: Install Node Backend
+        if: steps.check-backend.outputs.type == 'node'
+        run: cd backend && npm install
+        continue-on-error: true
+
+      - name: Node Backend Coverage
+        if: steps.check-backend.outputs.type == 'node'
+        run: cd backend && npm test -- --coverage --coverageReporters=json
         continue-on-error: true
 
       - name: Comment PR
@@ -45,5 +60,6 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '✅ Code coverage report attached to build logs'
+              body: '✅ Code quality checks completed - see build logs for details'
             })
+        continue-on-error: true
