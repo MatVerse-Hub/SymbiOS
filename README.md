@@ -1,4 +1,4 @@
-# 🌌 simbiOS - O Primeiro Sistema Operacional Simbiótico Web4
+# 🌌 symbiOS - O Primeiro Sistema Operacional Simbiótico Web4
 
 > **Ponte entre a intenção humana e a execução tecnológica, redefinindo a interação com sistemas.**
 
@@ -10,13 +10,13 @@
 
 ---
 
-## 🎯 O Que é simbiOS?
+## 🎯 O Que é symbiOS?
 
-**simbiOS** é o primeiro **Sistema Operacional Simbiótico** da era Web4, onde **IA + Blockchain + Computação Quântica + Edge Computing** vivem em simbiose perfeita, criando um ecossistema antifrágil que **melhora sob ataque** e toma decisões baseadas em matemática pura.
+**symbiOS** é o primeiro **Sistema Operacional Simbiótico** da era Web4, onde **IA + Blockchain + Computação Quântica + Edge Computing** vivem em simbiose perfeita, criando um ecossistema antifrágil que **melhora sob ataque** e toma decisões baseadas em matemática pura.
 
 ### 🔥 Por Que "Simbiótico"?
 
-Inspirado na **simbiose biológica** (como fungos e raízes que trocam nutrientes), o simbiOS cria relações "ganha-ganha" entre tecnologias:
+Inspirado na **simbiose biológica** (como fungos e raízes que trocam nutrientes), o symbiOS cria relações "ganha-ganha" entre tecnologias:
 
 - 🧠 **IA aprende** → Blockchain valida → Quântico protege → Edge executa
 - ⚡ Cada camada **beneficia** as outras, sem competição
@@ -26,7 +26,7 @@ Inspirado na **simbiose biológica** (como fungos e raízes que trocam nutriente
 
 ## ⚡ Especificações Absurdas
 
-| Recurso | simbiOS | Sistemas Convencionais |
+| Recurso | symbiOS | Sistemas Convencionais |
 |---------|---------|------------------------|
 | **Latência** | <3ms | 50-200ms |
 | **Ω-Score** | 0.955 (Elite) | N/A |
@@ -43,7 +43,7 @@ Inspirado na **simbiose biológica** (como fungos e raízes que trocam nutriente
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                     🌌 simbiOS Web4                          │
+│                     🌌 symbiOS Web4                          │
 ├──────────────────────────────────────────────────────────────┤
 │                                                              │
 │  🧠 IA Layer                  ⛓️ Blockchain Layer           │
@@ -267,7 +267,7 @@ Abra no navegador: **http://localhost:8001/docs**
 - [ ] Sistema de persistência (PostgreSQL)
 - [ ] Monitoramento Grafana/Prometheus
 - [ ] Testes E2E completos
-- [ ] **Release v1.0 simbiOS single-file** (30KB)
+- [ ] **Release v1.0 symbiOS single-file** (30KB)
 
 ---
 

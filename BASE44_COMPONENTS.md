@@ -1,4 +1,4 @@
-# BASE44_COMPONENTS.md - Integração Base44 no simbiOS
+# BASE44_COMPONENTS.md - Integração Base44 no symbiOS
 
 **Status**: 🚧 Planejado (Dezembro 2025)
 **Última atualização**: 23 de novembro de 2025
@@ -8,9 +8,9 @@
 
 ## 📋 Visão Geral
 
-Este documento descreve a integração do **Base44** no simbiOS, incluindo componentes React, configuração de API, e estratégias de sincronização de dados em tempo real.
+Este documento descreve a integração do **Base44** no symbiOS, incluindo componentes React, configuração de API, e estratégias de sincronização de dados em tempo real.
 
-**Base44** é uma plataforma de gerenciamento de entidades e eventos que será usada no simbiOS para:
+**Base44** é uma plataforma de gerenciamento de entidades e eventos que será usada no symbiOS para:
 - Rastreamento de Evidence Notes em tempo real
 - Dashboard de métricas Ω-GATE
 - Sincronização de estados entre múltiplos nós
@@ -28,7 +28,7 @@ Este documento descreve a integração do **Base44** no simbiOS, incluindo compo
 export const BASE44_CONFIG = {
   API_KEY: "431d90fd5dc046bea66c70686ed2a343",
   APP_ID: "69224f836e8f58657363c48f",
-  ENTITY: "simbiOS",
+  ENTITY: "symbiOS",
   BASE_URL: "https://app.base44.com/api/apps",
   VERSION: "v1"
 };
@@ -43,7 +43,7 @@ export const BASE44_CONFIG = {
 ```typescript
 interface SimbiOSEntity {
   id: string;
-  name: "simbiOS";
+  name: "symbiOS";
   type: "quantum_os";
   metadata: {
     omega_score: number;
@@ -553,7 +553,7 @@ export const useBase44 = (options: UseBase44Options = {}) => {
 
 ---
 
-## 📊 Integração com Backend simbiOS
+## 📊 Integração com Backend symbiOS
 
 ### Sincronização Evidence Notes → Base44
 
