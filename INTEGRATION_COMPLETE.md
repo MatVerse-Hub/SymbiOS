@@ -1,8 +1,8 @@
 # 🎉 MatVerse Unified Ecosystem - INTEGRAÇÃO COMPLETA
 
 **Status**: ✅ SISTEMA 100% OPERACIONAL
-**Data**: 2025-11-22
-**Repositório**: SymbiOS (`claude/review-agent-config-01VuJLLWwBmnwieWSE71pHBH`)
+**Data**: 2025-11-24 (atualizado)
+**Repositório**: SymbiOS (`main`)
 
 ---
 
@@ -462,12 +462,70 @@ elif omega >= 0.95:
 
 ---
 
+## 🆕 NOVAS FUNCIONALIDADES (24/Nov/2025)
+
+### 5. K8s Actuator - Rollback de Deployments
+
+**Arquivo**: `backend/autonomy/actuator.py`
+
+**Funcionalidade**:
+- Rollback completo de deployments Kubernetes
+- Execução via `kubectl rollout undo`
+- Captura de revisão atual e nova após rollback
+- Tratamento de erros com timeout de 60s
+- Suporte a modo mock para testes
+
+**Implementação**:
+```python
+def _rollback_deployment(self) -> ActuationResult:
+    """
+    Faz rollback do deployment para revisão anterior
+    - Obtém revisão atual do deployment
+    - Executa kubectl rollout undo
+    - Aguarda processamento (2s)
+    - Verifica nova revisão após rollback
+    - Retorna detalhes completos da operação
+    """
+```
+
+**Status**: ✅ **IMPLEMENTADO E TESTADO**
+
+### 6. PoSE - Mark Executed para Propostas
+
+**Arquivo**: `backend/blockchain/pose_client.py`
+
+**Funcionalidade**:
+- Marca propostas blockchain como EXECUTED após ação realizada
+- Validação de estado (só marca propostas APPROVED)
+- Suporte Web3 para mainnet
+- Modo mock para desenvolvimento/testes
+
+**Integração**: `backend/autonomy/blockchain_integration.py`
+```python
+# Após executar ação aprovada
+if proposal_id:
+    marked = self.pose_client.mark_executed(proposal_id)
+    if marked:
+        print(f"⛓️  Proposta #{proposal_id} marcada como EXECUTED on-chain")
+```
+
+**Testes**: `backend/test_mark_executed.py`
+```
+✅ Test 1: Proposta APPROVED → EXECUTED (sucesso)
+✅ Test 2: Proposta REJECTED → bloqueada (validação correta)
+🎉 ALL TESTS PASSED
+```
+
+**Status**: ✅ **IMPLEMENTADO, TESTADO E INTEGRADO**
+
+---
+
 ## 👥 EQUIPE
 
 **Desenvolvimento**: MatVerse Team
-**Data**: 2025-11-22
+**Data**: 2025-11-24 (última atualização)
 **Repositório**: SymbiOS
-**Branch**: `claude/review-agent-config-01VuJLLWwBmnwieWSE71pHBH`
+**Branch**: `main`
 
 ---
 
