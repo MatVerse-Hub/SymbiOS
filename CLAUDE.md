@@ -1,20 +1,20 @@
-# CLAUDE.md - Guia Oficial para Assistentes de IA no Ecossistema simbiOS
+# CLAUDE.md - Guia Oficial para Assistentes de IA no Ecossistema symbiOS
 
 **Última atualização:** 23 de novembro de 2025
 **Repositório:** MatVerse-Hub/SymbiOS
 **Branch principal:** `main`
 **Branches de desenvolvimento AI:** `claude/nome-da-tarefa-SESSION_ID`
-**Versão atual do CLAUDE.md:** 2.0 (simbiOS Web4 Edition)
+**Versão atual do CLAUDE.md:** 2.0 (symbiOS Web4 Edition)
 
 ---
 
 ## 1. Visão Geral do Projeto
 
-**simbiOS** é o primeiro **Sistema Operacional Simbiótico Web4** do planeta – uma ponte entre a intenção humana e a execução tecnológica, rodando com arquitetura antifrágil, custo operacional minimal, 8 camadas de segurança quântica, memória vetorial infinita e governança matemática autônoma.
+**symbiOS** é o primeiro **Sistema Operacional Simbiótico Web4** do planeta – uma ponte entre a intenção humana e a execução tecnológica, rodando com arquitetura antifrágil, custo operacional minimal, 8 camadas de segurança quântica, memória vetorial infinita e governança matemática autônoma.
 
-### O Que Torna o simbiOS Único?
+### O Que Torna o symbiOS Único?
 
-O simbiOS integra **quatro pilares tecnológicos** em simbiose perfeita:
+O symbiOS integra **quatro pilares tecnológicos** em simbiose perfeita:
 
 - **🧠 IA Autônoma**: Agentes que pensam, decidem e aprendem (DeepSeek local + federated learning)
 - **⛓️ Blockchain**: Governança matemática Ω-GATE + Evidence Notes imutáveis + contratos inteligentes
@@ -23,7 +23,7 @@ O simbiOS integra **quatro pilares tecnológicos** em simbiose perfeita:
 
 ### Diferencial Antifrágil
 
-Enquanto sistemas normais **quebram** sob ataque, o simbiOS **melhora**:
+Enquanto sistemas normais **quebram** sob ataque, o symbiOS **melhora**:
 - Aprende padrões de ataque e aumenta thresholds
 - Rotação automática de chaves a cada 5 minutos
 - Kill-switch após 3 eventos suspeitos em 60s
@@ -86,7 +86,7 @@ SymbiOS/ (raiz)
 | TypeScript   | React 18 + Vite + shadcn/ui + lucide-react | PascalCase componentes, camelCase tudo mais, .tsx sempre |
 | Estilo UI    | Tailwind + tema dark slate-900      | Nunca usar bibliotecas fora de shadcn/ui + lucide-react    |
 | Blockchain   | SPHINCS+-SHA256 (PQC) + Evidence Notes | Assinaturas resistentes a ataques quânticos              |
-| Base44       | App ID `69224f836e8f58657363c48f`   | Entity principal: `simbiOS`                                |
+| Base44       | App ID `69224f836e8f58657363c48f`   | Entity principal: `symbiOS`                                |
 | Git          | Conventional Commits + emoji        | `feat:`, `fix:`, `docs:`, `refactor:`, `chore:` + emoji    |
 
 ### Padrões de Código Python (Backend)
@@ -188,7 +188,7 @@ export const QuantumDashboard: React.FC<QuantumDashboardProps> = ({
 
 ## 5. Sistema Ω-GATE: Governança Matemática
 
-O coração do simbiOS é o **Ω-GATE** (Omega Governance Autonomous Trustless Engine), que toma decisões baseadas em matemática pura, sem viés humano.
+O coração do symbiOS é o **Ω-GATE** (Omega Governance Autonomous Trustless Engine), que toma decisões baseadas em matemática pura, sem viés humano.
 
 ### Fórmula Ω-Score
 
@@ -343,7 +343,7 @@ curl -X POST http://localhost:8001/unified/audit/comprehensive \
 const BASE44_CONFIG = {
   API_KEY: "431d90fd5dc046bea66c70686ed2a343",
   APP_ID: "69224f836e8f58657363c48f",
-  ENTITY: "simbiOS",
+  ENTITY: "symbiOS",
   BASE_URL: "https://app.base44.com/api/apps"
 };
 ```
@@ -357,7 +357,7 @@ const BASE44_CONFIG = {
 
 ---
 
-## 9. Roadmap simbiOS Web4 (nov/2025 → dez/2025)
+## 9. Roadmap symbiOS Web4 (nov/2025 → dez/2025)
 
 ### Implementado ✅
 - [x] Backend FastAPI completo
@@ -387,7 +387,7 @@ const BASE44_CONFIG = {
 - [ ] Monitoramento Grafana/Prometheus
 - [ ] Rate limiting + circuit breakers
 - [ ] Testes E2E completos
-- [ ] Release v1.0 simbiOS single-file (30KB)
+- [ ] Release v1.0 symbiOS single-file (30KB)
 
 ---
 
@@ -534,7 +534,7 @@ if omega_score < 0.70:
 
 ---
 
-**Status**: ✅ **simbiOS 100% OPERACIONAL**
+**Status**: ✅ **symbiOS 100% OPERACIONAL**
 
 🎉 **Bem-vindo ao futuro da Web4 Simbiótica!**
 

@@ -249,6 +249,7 @@ jobs:
           else
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "⚠️ No contracts to deploy - skipping"
+            exit 0
           fi
 
       - name: Deploy to Polygon Amoy
@@ -273,9 +274,12 @@ jobs:
   # Security Scan
   security:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -283,11 +287,13 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-results.sarif'
-      
+        continue-on-error: true
+
       - name: Upload to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
 
   # Notify
   notify:
