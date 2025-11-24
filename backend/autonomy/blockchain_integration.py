@@ -131,8 +131,14 @@ class BlockchainDecisionEngine(DecisionEngine):
 
             # Marca como executed on-chain
             if proposal_id:
-                # TODO: Chamar markExecuted no contrato
-                pass
+                try:
+                    marked = self.pose_client.mark_executed(proposal_id)
+                    if marked:
+                        print(f"⛓️  Proposta #{proposal_id} marcada como EXECUTED on-chain")
+                    else:
+                        print(f"⚠️  Falha ao marcar proposta #{proposal_id} como executada")
+                except Exception as e:
+                    print(f"❌ Erro ao marcar proposta como executada: {e}")
 
         bc_decision = BlockchainDecision(
             decision=decision,

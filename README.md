@@ -1,12 +1,8 @@
 # 🌌 symbiOS - O Primeiro Sistema Operacional Simbiótico Web4
 
-> **Ponte entre a intenção humana e a execução tecnológica, redefinindo a interação com sistemas.**
+Ponte entre a intenção humana e a execução tecnológica, com um backend Express modular, serviço de IA em FastAPI e contratos prontos para integração.
 
-[![Status](https://img.shields.io/badge/status-100%25%20operational-brightgreen)](https://github.com/MatVerse-Hub/SymbiOS)
-[![Ω-Score](https://img.shields.io/badge/Ω--Score-0.955-gold)](docs/omega-gate.md)
-[![Python](https://img.shields.io/badge/python-3.11-blue)](backend/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104-teal)](backend/src/api/)
-[![License](https://img.shields.io/badge/license-Proprietary-red)](LICENSE)
+## Como rodar
 
 ---
 
@@ -140,49 +136,25 @@ Inspirado no BitChat, com twist Web4:
 ### 1. Instalação
 
 ```bash
-# Clone o repositório
-git clone https://github.com/MatVerse-Hub/SymbiOS.git
-cd SymbiOS
-
-# Instale dependências Python
-pip install -r backend/requirements.txt
-
-# (Opcional) Instale dependências Node.js
+cd backend
 npm install
+npm run dev
+# testes e lint
+npm test
+npm run lint
 ```
 
-### 2. Iniciar o Sistema
+Para a API de IA local (FastAPI):
 
 ```bash
-# Inicie o servidor FastAPI
-cd backend/src/api
-python main.py
+cd backend/ai
+pip install -r requirements.txt
+pytest  # opcional para checar a suíte mínima
+python core.py  # sobe em http://localhost:8000
 ```
 
-**Saída esperada:**
-```
-🚀 SYMBIOS WEB4 ECOSYSTEM - STARTING
-================================================================================
-📊 Quantum States: 46,080
-⚡ Governance Frequency: 50.0 Hz
-🛡️ IP Artifacts Protected: 154
-🎯 Ω-TSA Score: 0.770
-⚛️ Antifragile β: 1.162
+### Contratos (Hardhat)
 
-🌐 Starting API server on http://0.0.0.0:8001
-📊 Dashboard metrics: /unified/dashboard/metrics
-🧪 API Documentation: http://0.0.0.0:8001/docs
-================================================================================
-```
-
-### 3. Testar Endpoints
-
-**Health Check:**
-```bash
-curl http://localhost:8001/health
-```
-
-**Auditoria Completa:**
 ```bash
 curl -X POST http://localhost:8001/unified/audit/comprehensive \
   -H "Content-Type: application/json" \
@@ -296,43 +268,22 @@ Veja [CLAUDE.md](CLAUDE.md) para guidelines completos para AIs e humanos.
 🟡 Dual-Brain: Planejado
 ```
 
----
+### Variáveis de ambiente
 
-## 🏆 Conquistas
+Veja `.env.example` para os valores esperados. Configure `MONGODB_URI`, `JWT_SECRET` e `AI_SERVICE_URL` antes de subir em produção.
 
-- ✅ **Primeiro sistema mundial** de auditoria científica com PQC
-- ✅ **Integração completa** Kalman + Blockchain + IA Governance
-- ✅ **Performance ultra-rápida** (< 3ms para auditoria completa)
-- ✅ **Segurança quântica** resistente a ataques futuros
-- ✅ **Validação matemática** rigorosa (Ω-GATE)
-- ✅ **100% de testes** passando
-- ✅ **0.95+ Ω-Score** médio (Elite tier)
+## Rotas principais
 
----
+- `POST /api/auth/login` — autenticação simplificada, retorna JWT.
+- `POST /api/decisions` — protegido por JWT. Chama o serviço de IA (`/calibrate`) e persiste a decisão.
+- `GET /api/decisions` — lista as últimas decisões do usuário autenticado.
 
-## 📞 Suporte
+## Scripts
 
-- **API Docs**: http://localhost:8001/docs
-- **Health**: http://localhost:8001/health
-- **Métricas**: http://localhost:8001/unified/dashboard/metrics
-- **Issues**: https://github.com/MatVerse-Hub/SymbiOS/issues
+- `npm run dev:backend` — backend Express com watch.
+- `npm run dev:ai` — serviço de IA em Python (FastAPI).
+- `npm test` — testes Jest com supertest.
 
----
+## Licença
 
-## 📄 Licença
-
-Proprietary - © 2025 MatVerse Team. All rights reserved.
-
----
-
-## 🌟 Agradecimentos
-
-Construído com 🧠 por **MatVerse Team** e **AIs Simbióticas**.
-
-**symbiOS** - Onde humanos e máquinas **evoluem juntos**.
-
----
-
-**Status**: ✅ **100% OPERACIONAL**
-
-🎉 **Bem-vindo à Web4 Simbiótica!**
+MIT
