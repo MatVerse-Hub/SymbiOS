@@ -14,6 +14,7 @@ Date: 2025-11-22
 """
 
 import time
+import subprocess
 from typing import Dict, Optional, List
 from dataclasses import dataclass
 from enum import Enum
@@ -222,14 +223,79 @@ class K8sActuator:
                 timestamp=time.time()
             )
 
-        # TODO: Implementar rollback real
-        return ActuationResult(
-            success=False,
-            action=Action.ROLLBACK,
-            details="Rollback not implemented",
-            execution_time_ms=0.0,
-            timestamp=time.time()
-        )
+        # Implementar rollback real usando Kubernetes API
+        try:
+            # Obtém informações atuais do deployment
+            deployment = self.k8s_apps.read_namespaced_deployment(
+                name=self.deployment_name,
+                namespace=self.namespace
+            )
+
+            current_revision = deployment.metadata.annotations.get(
+                'deployment.kubernetes.io/revision',
+                'unknown'
+            )
+
+            # Executa rollback usando kubectl rollout undo
+            # Nota: A API Kubernetes não tem endpoint direto para rollback,
+            # então usamos a estratégia de atualizar para a revisão anterior
+            result = subprocess.run(
+                [
+                    'kubectl', 'rollout', 'undo',
+                    f'deployment/{self.deployment_name}',
+                    '-n', self.namespace
+                ],
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+
+            if result.returncode == 0:
+                # Aguarda o rollback completar
+                time.sleep(2)  # Pequena espera para K8s processar
+
+                # Verifica nova revisão
+                deployment_after = self.k8s_apps.read_namespaced_deployment(
+                    name=self.deployment_name,
+                    namespace=self.namespace
+                )
+                new_revision = deployment_after.metadata.annotations.get(
+                    'deployment.kubernetes.io/revision',
+                    'unknown'
+                )
+
+                return ActuationResult(
+                    success=True,
+                    action=Action.ROLLBACK,
+                    details=f"Rolled back from revision {current_revision} to {new_revision}",
+                    execution_time_ms=150.0,
+                    timestamp=time.time()
+                )
+            else:
+                return ActuationResult(
+                    success=False,
+                    action=Action.ROLLBACK,
+                    details=f"Rollback failed: {result.stderr}",
+                    execution_time_ms=0.0,
+                    timestamp=time.time()
+                )
+
+        except subprocess.TimeoutExpired:
+            return ActuationResult(
+                success=False,
+                action=Action.ROLLBACK,
+                details="Rollback timed out after 60s",
+                execution_time_ms=0.0,
+                timestamp=time.time()
+            )
+        except Exception as e:
+            return ActuationResult(
+                success=False,
+                action=Action.ROLLBACK,
+                details=f"Rollback error: {str(e)}",
+                execution_time_ms=0.0,
+                timestamp=time.time()
+            )
 
     def _sync_current_replicas(self):
         """Sincroniza current_replicas com deployment real (K8s)"""

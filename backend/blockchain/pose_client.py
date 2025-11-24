@@ -376,6 +376,51 @@ class PoSEClient:
 
         return self.contract.functions.getVotingPower(address).call()
 
+    def mark_executed(self, proposal_id: int) -> bool:
+        """
+        Marca proposta como executada após ação ser realizada
+
+        Args:
+            proposal_id: ID da proposta
+
+        Returns:
+            True se marcada com sucesso
+        """
+        if self.mock_mode:
+            return self._mock_mark_executed(proposal_id)
+
+        try:
+            tx = self.contract.functions.markExecuted(proposal_id).build_transaction({
+                'from': self.account.address,
+                'nonce': self.w3.eth.get_transaction_count(self.account.address),
+                'gas': 100000,
+                'gasPrice': self.w3.eth.gas_price,
+            })
+
+            signed_tx = self.account.sign_transaction(tx)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            self.w3.eth.wait_for_transaction_receipt(tx_hash)
+
+            return True
+
+        except Exception as e:
+            print(f"❌ Erro ao marcar proposta como executada: {e}")
+            return False
+
+    def _mock_mark_executed(self, proposal_id: int) -> bool:
+        """Mock: Marca proposta como executada"""
+        if proposal_id not in self.mock_proposals:
+            return False
+
+        proposal = self.mock_proposals[proposal_id]
+
+        # Só pode marcar como executada se foi aprovada
+        if proposal.status != ProposalStatus.APPROVED:
+            return False
+
+        proposal.status = ProposalStatus.EXECUTED
+        return True
+
 
 # === DEMO ===
 
