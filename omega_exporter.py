@@ -1,14 +1,63 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import logging
 import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from statistics import mean
+from threading import Thread
 from typing import Dict, Iterable, List, Tuple
 
-from prometheus_client import Gauge, start_http_server
+if importlib.util.find_spec("prometheus_client"):
+    from prometheus_client import Gauge, start_http_server
+else:
+    _fallback_gauges = []
+
+    class Gauge:  # type: ignore[misc]
+        def __init__(self, name: str, description: str) -> None:
+            self.name = name
+            self.description = description
+            self.value: float = 0.0
+            _fallback_gauges.append(self)
+
+        def set(self, value: float) -> None:
+            try:
+                self.value = float(value)
+            except (TypeError, ValueError):
+                self.value = 0.0
+
+    def start_http_server(port: int) -> None:  # type: ignore[misc]
+        class MetricsHandler(BaseHTTPRequestHandler):
+            def do_GET(self) -> None:  # noqa: N802 - inherited API
+                if self.path not in {"/metrics", "/"}:
+                    self.send_response(404)
+                    self.end_headers()
+                    return
+
+                lines = []
+                for gauge in _fallback_gauges:
+                    lines.append(f"# HELP {gauge.name} {gauge.description}")
+                    lines.append(f"# TYPE {gauge.name} gauge")
+                    lines.append(f"{gauge.name} {gauge.value}")
+                body = "\n".join(lines) + "\n"
+
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; version=0.0.4")
+                self.send_header("Content-Length", str(len(body.encode("utf-8"))))
+                self.end_headers()
+                self.wfile.write(body.encode("utf-8"))
+
+            def log_message(self, format: str, *args: object) -> None:  # noqa: A003
+                return
+
+        logging.getLogger(__name__).warning(
+            "prometheus_client indisponível; usando servidor de métricas embutido."
+        )
+        server = ThreadingHTTPServer(("0.0.0.0", port), MetricsHandler)
+        Thread(target=server.serve_forever, daemon=True).start()
 
 from antifragile_config import load_config
 
