@@ -1,0 +1,34 @@
+FROM python:3.11-slim as base
+
+ENV PROMETHEUS_VERSION=2.54.1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl tar ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN useradd -ms /bin/bash prometheus
+
+RUN curl -fsSL https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz \
+    | tar -xz -C /tmp \
+    && mv /tmp/prometheus-${PROMETHEUS_VERSION}.linux-amd64/prometheus /usr/local/bin/ \
+    && mv /tmp/prometheus-${PROMETHEUS_VERSION}.linux-amd64/promtool /usr/local/bin/ \
+    && mv /tmp/prometheus-${PROMETHEUS_VERSION}.linux-amd64/consoles /etc/prometheus/ \
+    && mv /tmp/prometheus-${PROMETHEUS_VERSION}.linux-amd64/console_libraries /etc/prometheus/ \
+    && rm -rf /tmp/prometheus-${PROMETHEUS_VERSION}.linux-amd64
+
+COPY monitoring/prometheus.yml /etc/prometheus/prometheus.yml
+COPY antifragile_config.py antifragile_config.py
+COPY omega_exporter.py omega_exporter.py
+COPY symbios symbios
+
+RUN mkdir -p /prometheus && chown -R prometheus:prometheus /prometheus /etc/prometheus
+
+EXPOSE 8000 9090
+USER prometheus
+
+CMD ["sh", "-c", "python omega_exporter.py --port 8000 --interval 10 & /usr/local/bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.listen-address=:9090"]

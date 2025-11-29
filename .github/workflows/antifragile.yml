@@ -1,0 +1,68 @@
+name: Antifragile CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  antifragile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+
+      - name: Run Ω-validated tests
+        run: pytest
+
+      - name: Start Ω exporter
+        run: |
+          nohup python omega_exporter.py --port 8000 --interval 5 > exporter.log 2>&1 &
+          echo $! > exporter.pid
+
+      - name: Evaluate Ω-GATE metrics
+        run: |
+            sleep 6
+            OMEGA=$(curl -s http://localhost:8000/metrics | awk '/symbios_omega_score/{print $2; exit}')
+            THRESHOLD=$(python - <<'PY'
+              from antifragile_config import load_config
+              print(load_config().get("omega_threshold", 0.85))
+            PY
+            )
+            export OMEGA
+            export THRESHOLD
+            echo "Ω atual: ${OMEGA}" && echo "Limiar: ${THRESHOLD}"
+            python - <<'PY'
+              import os, sys
+              omega = float(os.environ.get("OMEGA", "0"))
+              threshold = float(os.environ.get("THRESHOLD", "0.85"))
+              if omega < threshold:
+                  print(f"Ω ({omega}) abaixo do limiar ({threshold}).")
+                  sys.exit(1)
+              else:
+                  print("Ω acima do limiar. Prosseguindo.")
+            PY
+
+      - name: Antifragile rollback + log
+        if: failure()
+        run: |
+            echo "Rollback antifrágil iniciado devido à queda de Ω."
+            git revert HEAD --no-commit || true
+            python - <<'PY'
+              from omega_exporter import get_omega_psi_cvar
+              from rollback_logger import log_and_tune
+
+              omega, psi, cvar = get_omega_psi_cvar()
+              event = log_and_tune(omega, omega - 0.05)
+              print("Evento registrado:", event)
+            PY
